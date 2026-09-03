@@ -11,8 +11,8 @@ struct Regenerator {
     ) async throws -> UIImage {
         let normalized = ImageTools.normalized(image)
         let originalPixelSize = CGSize(
-            width: normalized.cgImage?.width ?? Int(normalized.size.width),
-            height: normalized.cgImage?.height ?? Int(normalized.size.height)
+            width: CGFloat(normalized.cgImage?.width ?? Int(normalized.size.width)),
+            height: CGFloat(normalized.cgImage?.height ?? Int(normalized.size.height))
         )
         let input = try ImageTools.square512CGImage(from: normalized)
 
@@ -41,7 +41,7 @@ struct Regenerator {
             configuration.seed = UInt32.random(in: UInt32.min...UInt32.max)
 
             let generated = try pipeline.generateImages(configuration: configuration) { _ in true }
-            guard let cgImage = generated.first ?? nil else {
+            guard let first = generated.first, let cgImage = first else {
                 throw ImageProcessingError.noGeneratedImage
             }
 
