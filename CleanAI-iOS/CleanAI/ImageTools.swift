@@ -3,11 +3,15 @@ import UIKit
 struct ImageTools {
     static func normalized(_ image: UIImage) -> UIImage {
         guard image.imageOrientation != .up else { return image }
+        let pixelWidth = CGFloat(image.cgImage?.width ?? Int(image.size.width * image.scale))
+        let pixelHeight = CGFloat(image.cgImage?.height ?? Int(image.size.height * image.scale))
+        let pixelSize = CGSize(width: pixelWidth, height: pixelHeight)
         let format = UIGraphicsImageRendererFormat.default()
         format.scale = 1
-        let renderer = UIGraphicsImageRenderer(size: image.size, format: format)
+        format.opaque = true
+        let renderer = UIGraphicsImageRenderer(size: pixelSize, format: format)
         return renderer.image { _ in
-            image.draw(in: CGRect(origin: .zero, size: image.size))
+            image.draw(in: CGRect(origin: .zero, size: pixelSize))
         }
     }
 
@@ -18,8 +22,8 @@ struct ImageTools {
         format.opaque = true
         let renderer = UIGraphicsImageRenderer(size: CGSize(width: 512, height: 512), format: format)
         let rendered = renderer.image { context in
-            UIColor.black.setFill()
-            context.fill(CGRect(x: 0, y: 0, width: 512, height: 512))
+            context.cgContext.setFillColor(UIColor.black.cgColor)
+            context.cgContext.fill(CGRect(x: 0, y: 0, width: 512, height: 512))
             normalized.draw(in: CGRect(x: 0, y: 0, width: 512, height: 512))
         }
         guard let cgImage = rendered.cgImage else {
