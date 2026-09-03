@@ -1,0 +1,73 @@
+name: CleanAI iOS unsigned IPA
+
+on:
+  push:
+    branches:
+      - cleanai-ios
+    paths:
+      - 'CleanAI-iOS/**'
+      - '.github/workflows/cleanai-ios.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        working-directory: CleanAI-iOS
+        run: xcodegen generate
+
+      - name: Resolve Swift packages
+        working-directory: CleanAI-iOS
+        run: |
+          xcodebuild \
+            -resolvePackageDependencies \
+            -project CleanAI.xcodeproj \
+            -scheme CleanAI
+
+      - name: Build Release for iPhone
+        working-directory: CleanAI-iOS
+        run: |
+          xcodebuild \
+            -project CleanAI.xcodeproj \
+            -scheme CleanAI \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY='' \
+            clean build
+
+      - name: Create unsigned IPA
+        working-directory: CleanAI-iOS
+        run: |
+          set -euo pipefail
+          APP_PATH="build/Build/Products/Release-iphoneos/CleanAI.app"
+          test -d "$APP_PATH"
+          rm -rf Payload CleanAI-unsigned.ipa
+          mkdir -p Payload
+          ditto "$APP_PATH" "Payload/CleanAI.app"
+          /usr/bin/zip -qry CleanAI-unsigned.ipa Payload
+          /usr/bin/unzip -t CleanAI-unsigned.ipa
+          ls -lh CleanAI-unsigned.ipa
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CleanAI-iOS-unsigned
+          path: CleanAI-iOS/CleanAI-unsigned.ipa
+          if-no-files-found: error
+          compression-level: 0
