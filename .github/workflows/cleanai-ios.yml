@@ -3,7 +3,14 @@ name: CleanAI iOS unsigned IPA
 on:
   push:
     branches:
+      - main
       - cleanai-ios
+    paths:
+      - 'CleanAI-iOS/**'
+      - '.github/workflows/cleanai-ios.yml'
+  pull_request:
+    branches:
+      - main
     paths:
       - 'CleanAI-iOS/**'
       - '.github/workflows/cleanai-ios.yml'
