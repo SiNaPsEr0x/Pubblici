@@ -18,3 +18,8 @@ Conservare copie pubbliche di sicurezza e configurazioni utili del progetto orig
 - Il workflow salvato qui deve restare fuori da `.github/workflows/` di `Pubblici`.
 - Il progetto originale usa una sola Release rolling con tag `latest`, una sola IPA e versioning `ISO-year.ISO-week.ISO-weekday` in fuso Europe/Rome.
 - Prima di ripristinare file dopo un aggiornamento upstream, confrontare le differenze e non sovrascrivere indiscriminatamente il progetto.
+
+## Ultima verifica runtime
+- Commit sorgente verificato: `1edb09f33fddd204dab1c1d48c1bb28e714d7560`.
+- Run GitHub Actions: `35914949898`, conclusione `success`.
+- Correzione importante: le coordinate vengono passate direttamente nelle start options del Packet Tunnel; l'IPC di conferma è solo diagnostico e non blocca più l'attivazione.
