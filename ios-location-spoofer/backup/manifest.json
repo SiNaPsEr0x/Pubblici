@@ -1,13 +1,18 @@
 {
   "source_repository": "SiNaPsEr0x/ios-location-spoofer",
-  "original_baseline": "bfb44fa3b00e2cc8820536fb58e375d7269ef90a",
-  "verified_source_commit": "1edb09f33fddd204dab1c1d48c1bb28e714d7560",
+  "verified_source_commit": "bdea353c758c3f44f5bacca7a182bfa0d19f1377",
   "verification_date": "2026-09-23",
-  "workflow_run_id": 35914949898,
+  "workflow_run_id": 35916907202,
   "workflow_run_conclusion": "success",
-  "runtime_fix": {
-    "issue": "Go proxy ready but coordinate confirmation timed out",
-    "solution": "Pass spoofEnabled/spoofLatitude/spoofLongitude directly via NETunnelProviderSession.startTunnel(options:); IPC getCoords is diagnostic only."
+  "ios27": {
+    "persistent_vpn": true,
+    "on_demand": true,
+    "auto_start_on_app_launch": true,
+    "auto_reconnect_after_unexpected_disconnect": true,
+    "packet_tunnel_mode": "proxy-only-no-default-ip-route",
+    "proxy_match_domains": [""],
+    "custom_dns_override": false,
+    "coordinate_handoff": "NETunnelProviderSession.startTunnel(options:)"
   },
   "versioning": {
     "format": "ISO-year.ISO-week.ISO-weekday",
@@ -16,12 +21,9 @@
   },
   "release": {
     "tag": "latest",
-    "title": "Location Spoofer 2026.39.3",
-    "release_count": 1,
-    "asset_count": 1,
     "asset_name": "LocationSpoofer-unsigned.ipa",
-    "asset_size_bytes": 4207901,
-    "asset_sha256": "0711839ed3dc1c9da2bcc43bb0907cadc4937c0eba16435a84aaf661a1c91d10"
+    "asset_size_bytes": 4212400,
+    "asset_sha256": "d7f9e4933559318d67ce95004e4dbca691e0ade981f4c18184ca675f4b6baa8d"
   },
   "actions_artifacts_retained": 0,
   "backup_contents": [
@@ -30,7 +32,10 @@
     "customized/project.yml",
     "customized/GoSpoofer/make.sh",
     "customized/scripts/ci/build-unsigned.sh",
-    "customized/docs/unsigned-ipa.md"
+    "customized/docs/unsigned-ipa.md",
+    "customized/App/ContentView.swift",
+    "customized/App/MapHomeView.swift",
+    "customized/Tunnel/PacketTunnelProvider.swift"
   ],
-  "notes": "The GitHub Release is the only retained IPA download. No signing certificates, provisioning profiles, API keys or secrets are stored in this backup."
+  "notes": "Real-device iOS 27 spoofing must be validated after signing/installing the current Release IPA. CI validates build/package behavior only."
 }
