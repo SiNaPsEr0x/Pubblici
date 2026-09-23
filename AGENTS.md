@@ -13,3 +13,8 @@ Public files and recovery backups maintained for SiNaPsEr0x. Preserve unrelated 
 
 ## Managed backup location
 - `backups/github-actions/ios-location-spoofer/`: recovery files for `SiNaPsEr0x/ios-location-spoofer`; one unsigned IPA, cached build and source-only automatic triggers. See that directory's README and manifest for the saved revision and verification status.
+
+## ios-location-spoofer release backup
+- The live project now uses a single rolling Release with stable tag `latest`; historical Releases and Actions IPA artifacts are removed by CI.
+- Versioning is `ISO-year.ISO-week.ISO-weekday` in Europe/Rome time (example: `2026.39.3`).
+- Keep the workflow, project.yml and build scripts under `backups/github-actions/ios-location-spoofer/customized/` synchronized after verified CI changes.
