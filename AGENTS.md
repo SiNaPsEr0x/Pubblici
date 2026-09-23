@@ -1,20 +1,21 @@
 # AGENTS.md
 
-## Repository purpose
-Public files and recovery backups maintained for SiNaPsEr0x. Preserve unrelated files, including README.md and doc.zip.
+## Scopo della repository
+Questa repository è un contenitore pubblico generico per file, configurazioni, backup e materiali riutilizzabili relativi a progetti diversi. Non è dedicata a un singolo progetto.
 
-## Maintenance rules
-- Read this file and any nested AGENTS.md before changing the repository.
-- Keep this file updated when adding maintained projects or recovery procedures.
-- Never store tokens, private keys, signing certificates or provisioning profiles.
-- Store GitHub Actions backups outside `.github/workflows/` so they cannot execute in this repository.
-- Back up original and customized workflow configuration and required build scripts before replacing a project's CI.
-- Record source repository, source commit and restoration instructions. Do not automatically overwrite an upstream update without reviewing the differences.
+## Regole di organizzazione
+- Leggere questo file prima di modificare la repository e rispettare eventuali `AGENTS.md` più specifici nelle sottocartelle.
+- Il `README.md` nella root deve restare generico e non deve contenere informazioni, stato, cronologia o istruzioni specifiche di singoli progetti.
+- Ogni progetto o sorgente originale deve avere una propria cartella di primo livello con un nome riconoscibile, preferibilmente uguale al progetto originale.
+- Backup, workflow, configurazioni e istruzioni specifiche vanno sotto la cartella del relativo progetto, normalmente in `<progetto>/backup/`.
+- Le regole e la storia specifiche di un progetto vanno in `<progetto>/AGENTS.md` e, se serve, in `<progetto>/backup/README.md`.
+- Non creare cartelle di backup globali che mescolano progetti diversi quando il backup appartiene chiaramente a un progetto specifico.
+- Preservare sempre file e cartelle non correlati alla modifica richiesta.
 
-## Managed backup location
-- `backups/github-actions/ios-location-spoofer/`: recovery files for `SiNaPsEr0x/ios-location-spoofer`; one unsigned IPA, cached build and source-only automatic triggers. See that directory's README and manifest for the saved revision and verification status.
+## Sicurezza
+- Non salvare token, password, chiavi private, certificati di firma, provisioning profile o altri segreti.
+- I backup di GitHub Actions devono restare fuori da `.github/workflows/` di questa repository, così non possono essere eseguiti accidentalmente.
+- Prima di ripristinare un backup sopra un progetto aggiornato, confrontare le differenze e ripristinare solo i file ancora necessari.
 
-## ios-location-spoofer release backup
-- The live project now uses a single rolling Release with stable tag `latest`; historical Releases and Actions IPA artifacts are removed by CI.
-- Versioning is `ISO-year.ISO-week.ISO-weekday` in Europe/Rome time (example: `2026.39.3`).
-- Keep the workflow, project.yml and build scripts under `backups/github-actions/ios-location-spoofer/customized/` synchronized after verified CI changes.
+## Manutenzione
+Quando viene aggiunto o aggiornato un progetto, mantenere aggiornato il relativo `AGENTS.md` locale. La root deve continuare a descrivere soltanto lo scopo generale e le regole comuni della repository.
