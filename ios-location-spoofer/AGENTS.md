@@ -23,3 +23,10 @@ Conservare copie pubbliche di sicurezza e configurazioni utili del progetto orig
 - Commit sorgente verificato: `1edb09f33fddd204dab1c1d48c1bb28e714d7560`.
 - Run GitHub Actions: `35914949898`, conclusione `success`.
 - Correzione importante: le coordinate vengono passate direttamente nelle start options del Packet Tunnel; l'IPC di conferma è solo diagnostico e non blocca più l'attivazione.
+
+## iOS 27 persistent VPN
+- Commit verificato: `bdea353c758c3f44f5bacca7a182bfa0d19f1377`, run `35916907202` conclusa con successo.
+- Il tunnel è proxy-only e non dichiara più una default route IP senza packetFlow.
+- Il proxy HTTP/S usa `matchDomains = [""]`; il DNS custom è stato rimosso.
+- La VPN resta attiva dopo il tutorial, usa Connect On Demand e viene riattivata automaticamente all'apertura dell'app o dopo una disconnessione inattesa.
+- I file runtime personalizzati sono salvati anche sotto `backup/customized/App/` e `backup/customized/Tunnel/`.
