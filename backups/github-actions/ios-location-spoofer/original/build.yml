@@ -79,7 +79,7 @@ jobs:
                       new_lines.append(line)
                       # Check if lib is already in frameworks
                       if lib_build_id not in content.split("/* Frameworks */")[1].split("/* End")[0] if "/* Frameworks */" in content else "":
-                          new_lines.append(f"\t\t\t\t{lib_build_id} /* libgolocationspoofer.a in Frameworks */,\n")
+                          new_lines.append(f"\t\t\t\t{lib_build_id} /* libgolocationspoofer.a in Frameworks */,")
                       frameworks_section = False
                       continue
 
