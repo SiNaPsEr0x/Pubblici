@@ -1,0 +1,122 @@
+name: Build unsigned IPA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'App/**'
+      - 'Tunnel/**'
+      - 'Resources/**'
+      - 'GoSpoofer/**/*.go'
+      - 'GoSpoofer/**/*.h'
+      - 'GoSpoofer/*.modulemap'
+      - 'GoSpoofer/go.mod'
+      - 'GoSpoofer/go.sum'
+      - 'GoSpoofer/make.sh'
+      - 'project.yml'
+      - 'scripts/ci/**'
+      - '!**/*.md'
+      - '!**/.DS_Store'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: unsigned-ipa-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  HOMEBREW_NO_AUTO_UPDATE: '1'
+  HOMEBREW_NO_INSTALL_CLEANUP: '1'
+  GOTOOLCHAIN: local
+
+jobs:
+  build:
+    name: Test and build one unsigned IPA
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Go from go.mod
+        id: go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          go-version-file: GoSpoofer/go.mod
+          cache-dependency-path: GoSpoofer/go.sum
+          cache: true
+
+      - name: Prepare and fingerprint Apple toolchain
+        id: toolchain
+        run: |
+          set -euo pipefail
+          brew list --versions xcodegen >/dev/null 2>&1 || brew install xcodegen
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-version
+          xcodegen --version
+          fingerprint=$({ xcodebuild -version; xcrun --sdk iphoneos --show-sdk-version; xcodegen --version; } | shasum -a 256 | awk '{print $1}')
+          echo "id=$fingerprint" >> "$GITHUB_OUTPUT"
+
+      - name: Run Go tests and race detector
+        working-directory: GoSpoofer
+        run: |
+          set -euo pipefail
+          go mod verify
+          go test -mod=readonly -race -count=1 ./...
+          go vet -mod=readonly ./...
+
+      - name: Cache Go iOS static library and matching header
+        id: go-library
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: GoSpoofer/build
+          key: go-ios-v1-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.id }}-${{ steps.go.outputs.go-version }}-${{ hashFiles('GoSpoofer/**/*.go', 'GoSpoofer/go.mod', 'GoSpoofer/go.sum', 'GoSpoofer/make.sh') }}
+
+      - name: Compile Go for iOS arm64
+        if: steps.go-library.outputs.cache-hit != 'true'
+        run: bash GoSpoofer/make.sh
+
+      - name: Restore matching C header and generate Xcode project
+        run: |
+          set -euo pipefail
+          test -s GoSpoofer/build/libgolocationspoofer.a
+          test -s GoSpoofer/build/libgolocationspoofer.h
+          cp GoSpoofer/build/libgolocationspoofer.h GoSpoofer/golocationspoofer.h
+          xcrun lipo GoSpoofer/build/libgolocationspoofer.a -verify_arch arm64
+          xcodegen generate --spec project.yml
+
+      - name: Cache incremental Xcode build data
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: .build/DerivedData
+          key: xcode-v1-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.id }}-${{ steps.go.outputs.go-version }}-${{ hashFiles('App/**', 'Tunnel/**', 'Resources/**', 'GoSpoofer/**/*.go', 'GoSpoofer/**/*.h', 'GoSpoofer/go.mod', 'GoSpoofer/go.sum', 'GoSpoofer/make.sh', 'project.yml', 'scripts/ci/**') }}
+          restore-keys: |
+            xcode-v1-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.id }}-${{ steps.go.outputs.go-version }}-
+
+      - name: Build, package and verify unsigned IPA
+        id: ipa
+        run: bash scripts/ci/build-unsigned.sh
+
+      - name: Upload the single IPA directly
+        id: upload
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          path: ${{ steps.ipa.outputs.path }}
+          archive: false
+          if-no-files-found: error
+          overwrite: true
+          retention-days: 30
+
+      - name: Report download and cache status
+        env:
+          ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
+          LIBRARY_CACHE_HIT: ${{ steps.go-library.outputs.cache-hit }}
+        run: |
+          printf '\n[Download unsigned IPA](%s)\n\nGo library cache hit: `%s`\n' "$ARTIFACT_URL" "$LIBRARY_CACHE_HIT" >> "$GITHUB_STEP_SUMMARY"
